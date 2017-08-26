@@ -1,0 +1,25 @@
+{
+  "name": "wait-for-event",
+  "version": "1.0.0",
+  "description": "function that returns a promise in anticipation of an event",
+  "main": "index.js",
+  "scripts": {
+    "test": "node_modules/.bin/mocha",
+    "setup": "rm -rf node_modules && npm i && npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:CharlesWall/waitForEvent.git"
+  },
+  "keywords": [
+    "wait",
+    "event",
+    "waitForEvent"
+  ],
+  "author": "Charles T. Wall III",
+  "license": "MIT",
+  "devDependencies": {
+    "mocha": "^3.5.0",
+    "uuid": "^3.1.0"
+  }
+}
