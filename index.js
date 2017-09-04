@@ -43,7 +43,7 @@ function waitForEvent(eventEmitter, eventName, filter, options) {
           });
       } catch (e) { 
         cleanup();
-        throw e;
+        reject(e);
       }
     }
 

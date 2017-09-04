@@ -72,7 +72,7 @@ describe('waitForEvent', () => {
       const filter = event => { 
         filterEvent = event; 
         return true;
-      }
+      };
       await Promise.all([
         waitForEvent(eventEmitter, eventName, filter),
         (async () => { eventEmitter.emit(eventName, emittedEvent); })()
@@ -82,20 +82,14 @@ describe('waitForEvent', () => {
     });
 
     it('should reject if the filter rejects', async () => {
-      const filter = event => { 
+      const filter = () => { 
         throw new Error('this should fail');
-      }
-      try {
-        await Promise.all([
-          waitForEvent(eventEmitter, eventName, filter),
-          (async () => { eventEmitter.emit(eventName, emittedEvent); })()
-        ]);
-        throw new Error('waitForEvent should have throw an error');
-      } catch(e) {
-        if (e.message === 'this should fail') { return; }
-        throw e;
-      }
-      assert(filterEvent === emittedEvent, 'the event that was emitted was not passed into the filter');
+      };
+      const eventPromise = waitForEvent(eventEmitter, eventName, filter);
+      await Promise.all([
+        shouldReject(eventPromise, 'this should fail'),
+        (() => { eventEmitter.emit(eventName, emittedEvent); })()
+      ]);
     });
     
     context('filter function returns a truthy value or promise', () => {
@@ -135,7 +129,7 @@ describe('waitForEvent', () => {
         undefined,
       ].forEach((falsyValue) => {
         it(`should not resolve when filter returns ${falsyValue}`, async () => {
-        let falsePromiseFilter = async () => { return falsyValue; };
+          let falsePromiseFilter = async () => { return falsyValue; };
           await Promise.all([
             shouldNotResolve(10, waitForEvent(eventEmitter, eventName, falsePromiseFilter)),
             (() => { eventEmitter.emit(eventName, emittedEvent); })()
@@ -153,27 +147,27 @@ describe('waitForEvent', () => {
     });
   });
 
-  context('future', () => {
-    context('a timeout is passed in', () => {
-      it('should reject if the event is not emitted before the timeout', async () => {
-        const timeout = 100;
-        const eventName = 'timed event';
-        setTimeout(() => { 
-          eventEmitter.emit(eventName, {});
-        }, timeout + 10);
-        const eventPromise = waitForEvent(eventEmitter, eventName, {timeout});
-        await shouldReject(eventPromise, 'Timed out waiting for event');
-      });
-      it('should resolve if the event is emitted before the timeout', async () => {
-        const timeout = 100;
-        const eventName = 'timed event';
-        setTimeout(() => { 
-          eventEmitter.emit(eventName, {});
-        }, timeout - 10);
-        await waitForEvent(eventEmitter, eventName, {timeout});
-      });
+  context('a timeout is passed in', () => {
+    it('should reject if the event is not emitted before the timeout', async () => {
+      const timeout = 100;
+      const eventName = 'timed event';
+      setTimeout(() => { 
+        eventEmitter.emit(eventName, {});
+      }, timeout + 10);
+      const eventPromise = waitForEvent(eventEmitter, eventName, {timeout});
+      await shouldReject(eventPromise, 'Timed out waiting for event');
     });
+    it('should resolve if the event is emitted before the timeout', async () => {
+      const timeout = 100;
+      const eventName = 'timed event';
+      setTimeout(() => { 
+        eventEmitter.emit(eventName, {});
+      }, timeout - 10);
+      await waitForEvent(eventEmitter, eventName, {timeout});
+    });
+  });
 
+  context('future', () => {
     context.skip('debug messages', () => {
       it('should emit a debug message when listening starts');
       it('should emit a debug message when an unsuccessful filter calls is made');
