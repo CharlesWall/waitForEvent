@@ -1,5 +1,5 @@
 {
-  "name": "wait-for-event",
+  "name": "wait-for-event-promise",
   "version": "1.0.0",
   "description": "function that returns a promise in anticipation of an event",
   "main": "index.js",
