@@ -21,6 +21,17 @@ describe('waitForEvent', () => {
     }).then(() => { eventEmitter.removeAllListeners(eventName); });
   }
 
+  function shouldReject(promise, expectedErrorMessage) {
+    return promise
+      .then(() => {
+        throw new Error('this should not have resolved');
+      })
+      .catch(error => {
+        assert.equal(error.message, expectedErrorMessage);
+        return error;
+      });
+  }
+
   beforeEach(() => {
     eventEmitter = new EventEmitter();
     eventName = uuid.v4();
@@ -143,9 +154,24 @@ describe('waitForEvent', () => {
   });
 
   context('future', () => {
-    context.skip('a timeout is passed in', () => {
-      it('should reject if the event is not emitted before the timeout');
-      it('should resolve if the event is emitted before the timeout');
+    context('a timeout is passed in', () => {
+      it('should reject if the event is not emitted before the timeout', async () => {
+        const timeout = 100;
+        const eventName = 'timed event';
+        setTimeout(() => { 
+          eventEmitter.emit(eventName, {});
+        }, timeout + 10);
+        const eventPromise = waitForEvent(eventEmitter, eventName, {timeout});
+        await shouldReject(eventPromise, 'Timed out waiting for event');
+      });
+      it('should resolve if the event is emitted before the timeout', async () => {
+        const timeout = 100;
+        const eventName = 'timed event';
+        setTimeout(() => { 
+          eventEmitter.emit(eventName, {});
+        }, timeout - 10);
+        await waitForEvent(eventEmitter, eventName, {timeout});
+      });
     });
 
     context.skip('debug messages', () => {

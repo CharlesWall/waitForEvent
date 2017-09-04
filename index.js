@@ -13,8 +13,20 @@
 
 module.exports = waitForEvent;
 
-function waitForEvent(eventEmitter, eventName, filter) {
+function waitForEvent(eventEmitter, eventName, filter, options) {
+  if (filter && typeof filter !== 'function') {
+    options = filter;
+    filter = null;
+  }
+
   return new Promise((resolve, reject) => {
+    if (options && options.timeout) {
+      setTimeout(() => {
+        cleanup();
+        reject(new Error('Timed out waiting for event'));
+      }, options.timeout);
+    }
+
     function cleanup() {
       eventEmitter.removeListener(eventName, handler);
       return true;
@@ -33,7 +45,6 @@ function waitForEvent(eventEmitter, eventName, filter) {
         cleanup();
         throw e;
       }
-
     }
 
     eventEmitter.on(eventName, handler);
