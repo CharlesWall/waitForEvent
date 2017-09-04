@@ -150,7 +150,6 @@ describe('waitForEvent', () => {
   context('a timeout is passed in', () => {
     it('should reject if the event is not emitted before the timeout', async () => {
       const timeout = 100;
-      const eventName = 'timed event';
       setTimeout(() => { 
         eventEmitter.emit(eventName, {});
       }, timeout + 10);
@@ -167,13 +166,42 @@ describe('waitForEvent', () => {
     });
   });
 
-  context('future', () => {
-    context.skip('debug messages', () => {
-      it('should emit a debug message when listening starts');
-      it('should emit a debug message when an unsuccessful filter calls is made');
-      it('should emit a debug message when a successful filter calls is made');
-      it('should emit a debug message when it resolves');
+  context('debug messages', () => {
+    let logs;
+    let logger = message => { logs.push(message); };
+    beforeEach(() => { logs = []; });
+
+    context('with a filter', () => {
+      const filter = event => { return event === emittedEvent; };
+      it('should log debug messages', async () => {
+        await Promise.all([
+          waitForEvent(eventEmitter, eventName, { logger, filter}),
+          (async () => { 
+            eventEmitter.emit(eventName, {}); 
+            eventEmitter.emit(eventName, emittedEvent); 
+          })()
+        ]);
+        assert.equal(logs[0], `Waiting for event: ${eventName}`);
+        assert.equal(logs[1], `Filtering for event: ${eventName}`);
+        assert.equal(logs[2], `Filtering for event: ${eventName}`);
+        assert.equal(logs[3], `Got matching event: ${eventName}`);
+      });
     });
+    context('without a filter', () => {
+      it('should log debug messages', async () => {
+        await Promise.all([
+          waitForEvent(eventEmitter, eventName, { logger }),
+          (async () => { 
+            eventEmitter.emit(eventName, emittedEvent); 
+          })()
+        ]);
+        assert.equal(logs[0], `Waiting for event: ${eventName}`);
+        assert.equal(logs[1], `Got matching event: ${eventName}`);
+      });
+    });
+  });
+
+  context('future', () => {
     context.skip('add a README.txt');
   });
 });

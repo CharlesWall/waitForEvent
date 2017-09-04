@@ -16,10 +16,16 @@ module.exports = waitForEvent;
 function waitForEvent(eventEmitter, eventName, filter, options) {
   if (filter && typeof filter !== 'function') {
     options = filter;
-    filter = null;
+    filter = options.filter || null;
   }
+  options = options || {};
+  const logger = options.logger;
 
   return new Promise((resolve, reject) => {
+    if (typeof logger === 'function') {
+      logger(`Waiting for event: ${eventName}`);
+    }
+
     if (options && options.timeout) {
       setTimeout(() => {
         cleanup();
@@ -34,6 +40,10 @@ function waitForEvent(eventEmitter, eventName, filter, options) {
 
     function handler(event) {
       try {
+        if (typeof filter === 'function' && typeof logger === 'function') {
+          logger(`Filtering for event: ${eventName}`);
+        }
+
         Promise.resolve(typeof filter === 'function' ? filter(event) : true)
           .then(match => {
             if (match) { cleanup() && resolve(event); }
@@ -48,6 +58,12 @@ function waitForEvent(eventEmitter, eventName, filter, options) {
     }
 
     eventEmitter.on(eventName, handler);
+  }).then(event => {
+    if (typeof logger === 'function') {
+      logger(`Got matching event: ${eventName}`);
+    }
+
+    return event;
   });
 }
 
