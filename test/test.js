@@ -45,8 +45,8 @@ describe('waitForEvent', () => {
   it('should resolve with the event that was emitted when the event is emitted', async () => {
     const [resultEvent] = await Promise.all([
       waitForEvent(eventEmitter, eventName),
-      (async () => { 
-        eventEmitter.emit(eventName, emittedEvent); 
+      (async () => {
+        eventEmitter.emit(eventName, emittedEvent);
       })()
     ]);
 
@@ -56,8 +56,8 @@ describe('waitForEvent', () => {
   it('should not resolve if a different event is emitted', async () => {
     await Promise.all([
       shouldNotResolve(10, waitForEvent(eventEmitter, eventName)),
-      (() => { 
-        eventEmitter.emit('this is not the event you are looking for', emittedEvent); 
+      (() => {
+        eventEmitter.emit('this is not the event you are looking for', emittedEvent);
       })()
     ]);
   });
@@ -69,8 +69,8 @@ describe('waitForEvent', () => {
   context('a filter function is passed in', () => {
     it('should pass the event into the filter function', async () => {
       let filterEvent;
-      const filter = event => { 
-        filterEvent = event; 
+      const filter = event => {
+        filterEvent = event;
         return true;
       };
       await Promise.all([
@@ -82,7 +82,7 @@ describe('waitForEvent', () => {
     });
 
     it('should reject if the filter rejects', async () => {
-      const filter = () => { 
+      const filter = () => {
         throw new Error('this should fail');
       };
       const eventPromise = waitForEvent(eventEmitter, eventName, filter);
@@ -91,12 +91,12 @@ describe('waitForEvent', () => {
         (() => { eventEmitter.emit(eventName, emittedEvent); })()
       ]);
     });
-    
+
     context('filter function returns a truthy value or promise', () => {
-      [ 
+      [
         true,
         1,
-        100, 
+        100,
         'truthy',
       ].forEach(truthyValue => {
 
@@ -121,11 +121,11 @@ describe('waitForEvent', () => {
     });
 
     context('filter function returns a falsy value or promise', () => {
-      [ 
-        false, 
-        0, 
-        '', 
-        null, 
+      [
+        false,
+        0,
+        '',
+        null,
         undefined,
       ].forEach((falsyValue) => {
         it(`should not resolve when filter returns ${falsyValue}`, async () => {
@@ -150,7 +150,7 @@ describe('waitForEvent', () => {
   context('a timeout is passed in', () => {
     it('should reject if the event is not emitted before the timeout', async () => {
       const timeout = 100;
-      setTimeout(() => { 
+      setTimeout(() => {
         eventEmitter.emit(eventName, {});
       }, timeout + 10);
       const eventPromise = waitForEvent(eventEmitter, eventName, {timeout});
@@ -159,7 +159,7 @@ describe('waitForEvent', () => {
     it('should resolve if the event is emitted before the timeout', async () => {
       const timeout = 100;
       const eventName = 'timed event';
-      setTimeout(() => { 
+      setTimeout(() => {
         eventEmitter.emit(eventName, {});
       }, timeout - 10);
       await waitForEvent(eventEmitter, eventName, {timeout});
@@ -176,9 +176,9 @@ describe('waitForEvent', () => {
       it('should log debug messages', async () => {
         await Promise.all([
           waitForEvent(eventEmitter, eventName, { logger, filter}),
-          (async () => { 
-            eventEmitter.emit(eventName, {}); 
-            eventEmitter.emit(eventName, emittedEvent); 
+          (async () => {
+            eventEmitter.emit(eventName, {});
+            eventEmitter.emit(eventName, emittedEvent);
           })()
         ]);
         assert.equal(logs[0], `Waiting for event: ${eventName}`);
@@ -191,17 +191,13 @@ describe('waitForEvent', () => {
       it('should log debug messages', async () => {
         await Promise.all([
           waitForEvent(eventEmitter, eventName, { logger }),
-          (async () => { 
-            eventEmitter.emit(eventName, emittedEvent); 
+          (async () => {
+            eventEmitter.emit(eventName, emittedEvent);
           })()
         ]);
         assert.equal(logs[0], `Waiting for event: ${eventName}`);
         assert.equal(logs[1], `Got matching event: ${eventName}`);
       });
     });
-  });
-
-  context('future', () => {
-    context.skip('add a README.txt');
   });
 });
