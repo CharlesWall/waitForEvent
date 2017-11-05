@@ -34,7 +34,8 @@ function waitForEvent(eventEmitter, eventName, filter, options) {
     }
 
     function cleanup() {
-      eventEmitter.removeListener(eventName, handler);
+      (eventEmitter.removeListener || eventEmitter.removeEventListener)
+        .call(eventEmitter, eventName, handler);
       return true;
     }
 
@@ -57,7 +58,8 @@ function waitForEvent(eventEmitter, eventName, filter, options) {
       }
     }
 
-    eventEmitter.on(eventName, handler);
+    (eventEmitter.on || eventEmitter.addEventListener)
+      .call(eventEmitter, eventName, handler);
   }).then(event => {
     if (typeof logger === 'function') {
       logger(`Got matching event: ${eventName}`);
